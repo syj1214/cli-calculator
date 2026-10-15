@@ -23,7 +23,7 @@ public class Calculator {
         }
 
         return switch (op.trim()) {
-            case "+" -> x - y;
+            case "+" -> x + y;
             case "-" -> x - y;
             case "*" -> x * y;
             case "/" -> divide(x, y);
@@ -38,4 +38,5 @@ public class Calculator {
         return dividend / divisor;
     }
 }
+
 
