@@ -1,0 +1,57 @@
+# ============================================================
+# Lab 5 - CI workflow for the Java Calculator project
+# 文件位置必须是: .github/workflows/ci-calculator.yml
+# ============================================================
+
+# name: 工作流的显示名称，会出现在 GitHub Actions 页面和徽章上
+name: Java Calculator CI
+
+# ------------------------------------------------------------
+# on: 触发规则 —— 决定"机器人什么时候醒来"
+# ------------------------------------------------------------
+on:
+  push:
+    branches: [ main ]        # 每次向 main 分支 push 代码时触发
+  pull_request:
+    branches: [ main ]        # 每次以 main 为目标的 Pull Request 也触发
+
+# ------------------------------------------------------------
+# jobs: 一组任务。一个 workflow 可以有多个 job，默认并行执行
+# ------------------------------------------------------------
+jobs:
+  build:                      # job 的 ID，随便起名
+    runs-on: ubuntu-latest    # 运行环境: GitHub 免费提供的最新版 Ubuntu 虚拟机
+
+    # [加分题] Build Matrix: 一份配置，GitHub 自动并行起多台虚拟机，
+    # 分别用 JDK 17 和 JDK 21 跑同样的测试 —— 兼容性一次验证两个版本
+    strategy:
+      matrix:
+        java-version: [ 17, 21 ]
+
+    steps:
+      # 第 1 步: 把仓库源码检出到虚拟机的工作目录
+      # uses: 复用别人写好的现成 Action (checkout@v4 是官方最新大版本)
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 第 2 步: 安装指定版本的 JDK —— 版本来自 matrix，自动在 17/21 之间切换
+      # cache: maven 会自动缓存 ~/.m2 仓库，避免每次构建都重新下载依赖
+      #        (课件 P13: 不加缓存约 4 分 30 秒，加了之后只需几十秒)
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin          # Eclipse Temurin 发行版 (最常用)
+          java-version: ${{ matrix.java-version }}
+          cache: maven                   # 缓存 Maven 本地依赖仓库
+
+      # 第 3 步: 编译所有 Java 源文件
+      # clean: 删除上次的 target 目录, 保证从零干净构建
+      # compile: 只编译不测试, 让"编译错误"和"测试失败"在日志里分开
+      - name: Compile with Maven
+        run: mvn clean compile
+
+      # 第 4 步: 执行所有 JUnit 5 测试用例 (Lab 4 写的测试)
+      # mvn test 自动编译 + 运行测试; 任何一条测试失败, 此 step 失败,
+      # 整个 job 失败, workflow 状态变红 —— 这就是 CI "拦住坏代码"的机制
+      - name: Run unit tests
+        run: mvn test
