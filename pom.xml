@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- ============ 1. PROJECT IDENTITY ============ -->
+  <groupId>com.yourname</groupId>
+  <artifactId>calculator</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+
+  <name>calculator</name>
+  <description>Calculator project extended for Lab 4: unit testing, coverage and static analysis</description>
+
+  <!-- ============ 2. PROPERTIES ============ -->
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
+    <commons.lang3.version>3.14.0</commons.lang3.version>
+    <junit.version>5.10.0</junit.version>
+    <jacoco.version>0.8.13</jacoco.version>
+  </properties>
+
+  <!-- ============ 3. DEPENDENCIES ============ -->
+  <dependencies>
+
+    <!-- Compile scope: Apache Commons Lang 3 (StringUtils validation) -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons.lang3.version}</version>
+    </dependency>
+
+    <!-- Test scope: JUnit 5 (Jupiter). The aggregate artifact brings in
+         junit-jupiter-api, junit-jupiter-params and junit-jupiter-engine,
+         so parameterised tests need no extra dependency. -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <!-- ============ 4. BUILD PLUGINS ============ -->
+  <build>
+    <finalName>calculator-${project.version}</finalName>
+    <plugins>
+
+      <!-- 4.1 Compiler -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <configuration>
+          <release>${maven.compiler.release}</release>
+        </configuration>
+      </plugin>
+
+      <!-- 4.2 Surefire: runs the JUnit 5 test suite -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+
+      <!-- 4.3 JaCoCo: instruments the bytecode, records execution and writes
+           an HTML report (target/site/jacoco/index.html) plus an XML report
+           that carries the line and branch coverage counters. -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+        <configuration>
+          <!-- Keep the intentionally buggy reference class out of the
+               coverage denominator; it exists only as debugging evidence. -->
+          <excludes>
+            <exclude>com/yourname/CalculatorBuggy.class</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <!-- (a) attach the JaCoCo Java agent before the tests run -->
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <!-- (b) after the test phase, write the report -->
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- 4.4 Jar plugin: executable manifest -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>com.yourname.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <!-- 4.5 Shade plugin: build a runnable fat jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.5.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <transformers>
+                <transformer
+                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.yourname.App</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>
