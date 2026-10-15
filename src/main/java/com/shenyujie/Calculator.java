@@ -1,4 +1,4 @@
-﻿package com.yourname;
+package com.yourname;
 
 import org.apache.commons.lang3.StringUtils;
 
