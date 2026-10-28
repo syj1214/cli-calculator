@@ -1,0 +1,19 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <!-- Maven mirror used only during the Docker build.
+       Reason: repo.maven.apache.org answers at roughly 95 KB/s from this
+       network, which made "mvn dependency:go-offline" stall for more than
+       ten minutes. The Aliyun public repository mirrors Maven Central and
+       responds in under 0.1 s, cutting the build to about 30 s.
+       Copy this file to ~/.m2/settings.xml to use it for local builds too. -->
+  <mirrors>
+    <mirror>
+      <id>aliyunmaven</id>
+      <mirrorOf>central</mirrorOf>
+      <name>Aliyun Public Repository</name>
+      <url>https://maven.aliyun.com/repository/public</url>
+    </mirror>
+  </mirrors>
+</settings>

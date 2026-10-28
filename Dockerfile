@@ -21,6 +21,14 @@ WORKDIR /app
 # so the dependency layer stays valid when only the source code changes.
 COPY pom.xml .
 
+# COPY: Maven mirror configuration. Maven Central answers at roughly
+# 95 KB/s from this network, which made the dependency download below
+# stall for more than ten minutes; the Aliyun mirror answers in under
+# 0.1 s. The file is copied into the builder stage only and is discarded
+# together with the rest of the tool chain, so it never reaches the
+# final image and does not change the runtime behaviour in any way.
+COPY settings.xml /root/.m2/settings.xml
+
 # RUN: pre-download all Maven dependencies during the build
 # (-B = batch mode, non-interactive output).
 RUN mvn dependency:go-offline -B
