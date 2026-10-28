@@ -8,7 +8,11 @@
 # FROM: base image that already contains Maven and JDK 17, so the build
 # tool chain does not have to be installed by hand. "AS builder" names
 # the stage so the runtime stage can copy from it.
-FROM maven:3.8-openjdk-17 AS builder
+# NOTE: the handout suggests maven:3.8-openjdk-17, but that tag was removed
+# from Docker Hub in 2022 when the official openjdk images were retired, so
+# it now fails with "manifest unknown". maven:3.9-eclipse-temurin-17 is the
+# maintained equivalent (same Maven line, same JDK 17).
+FROM maven:3.9-eclipse-temurin-17 AS builder
 
 # WORKDIR: working directory inside the image for all following commands.
 WORKDIR /app
@@ -31,13 +35,16 @@ RUN mvn package -DskipTests
 # ---------- Stage 2: Runtime ----------
 # FROM: lightweight JRE-only image. No Maven, no compiler, therefore the
 # final image is far smaller than the build stage.
-FROM openjdk:17-jre-slim
+# NOTE: openjdk:17-jre-slim is deprecated and no longer published either;
+# eclipse-temurin is the distribution recommended by the Docker docs, and
+# the alpine variant keeps the runtime image around 150 MB.
+FROM eclipse-temurin:17-jre-alpine
 
 # WORKDIR: working directory of the runtime stage.
 WORKDIR /app
 
 # COPY --from: bring the jar produced in stage 1 into this image.
-# The file name follows <finalName> in pom.xml: calculator-${version}.jar
+# The file name follows <finalName> in pom.xml: calculator-${project.version}.jar
 # (maven-shade-plugin replaces the main artifact with the fat jar).
 COPY --from=builder /app/target/calculator-1.0.jar app.jar
 
