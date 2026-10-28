@@ -1,0 +1,8 @@
+# Excluded from the Docker build context: speeds up the build and keeps
+# local build output, IDE settings and git history out of the image.
+target/
+.git/
+.idea/
+*.iml
+README.md
+.github/
