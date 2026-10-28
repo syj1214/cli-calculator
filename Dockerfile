@@ -44,8 +44,9 @@ RUN mvn package -DskipTests
 # FROM: lightweight JRE-only image. No Maven, no compiler, therefore the
 # final image is far smaller than the build stage.
 # NOTE: openjdk:17-jre-slim is deprecated and no longer published either;
-# eclipse-temurin is the distribution recommended by the Docker docs, and
-# the alpine variant keeps the runtime image around 150 MB.
+# eclipse-temurin is the distribution recommended by the Docker docs. The
+# alpine variant keeps the final image at 257 MB on disk (68.6 MB of
+# compressed content), roughly a third of the 775 MB build-stage image.
 FROM eclipse-temurin:17-jre-alpine
 
 # WORKDIR: working directory of the runtime stage.
